@@ -1,1 +1,2 @@
-ipcv-pointnet
+# PointNet
+Implementing from scratch PointNet
