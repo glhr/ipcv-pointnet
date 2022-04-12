@@ -29,7 +29,7 @@ class Trainer:
         self.epochCount = []
         self.lossCount = []
 
-        self.batch_size = 24
+        self.batch_size = 8
         self.lr = 0.001
         self.n_epochs = 15
         self.model_path = "/Users/Mikke/PycharmProjects/pointnet/model/model.pth"
@@ -37,8 +37,8 @@ class Trainer:
         self.compute_validation = False
 
         # Use GPU?
-        #self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = torch.device("cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #self.device = torch.device("cpu")
         print("Training on Device: ", self.device)
         self.writer = SummaryWriter()
         if  self.compute_validation == True:
@@ -81,12 +81,13 @@ class Trainer:
 
 
     def train(self):
-        points, target = next(iter(self.dataloader))
-        i = 1
+
         for epoch in range(self.n_epochs):
+            running_loss = 0.0
+            running_acc = 0.0
             #  Training Loop:
             self.net.train()
-            for i, (points, target) in enumerate(self.dataloader):
+            for i, (points, target) in enumerate(self.dataloader, start=1):
                 #if torch.cuda.is_available():
                     points = points.to(self.device)
                     target = target.to(self.device, dtype = torch.int64)
@@ -102,17 +103,20 @@ class Trainer:
                     loss.backward()
                     self.optimizer.step()
 
-                    if i % 100 == 0:
-                        print("="*50)
-                        print('pred shape: ', pred.shape)
-                        print('A: ', A.shape)
-                        pred_ = torch.max(pred, 1)[1]
-                        print('pred_: ', pred_.shape)
-                        acc = ExtractH5Data.DataExtractor.CalculateACC(self, prediction=pred_, label=target)
-                        print("Epoch: %d, i: %d, Error Loss: %f, acc: %f" % (epoch, i, loss, acc),'%')
+                    running_loss += loss.item()
 
-                        self.writer.add_scalar("Loss/train", loss, epoch)
-                        self.writer.add_scalar('Accuracy', acc, epoch)
+                    # print("=" * 50)
+                    # print('pred shape: ', pred.shape, pred)
+                    # print('A: ', A.shape)
+                    pred_ = torch.argmax(pred, 1)
+                    # print('pred_: ', pred_.shape, pred_)
+                    acc = ExtractH5Data.DataExtractor.CalculateACC(self, prediction=pred_, label=target)
+                    running_acc += acc.item()
+
+            print("Epoch: %d, Error Loss: %f, acc: %f" % (epoch, running_loss/i, running_acc/i),'%')
+
+            self.writer.add_scalar("Loss/train", running_loss/i, epoch)
+            self.writer.add_scalar('Accuracy', running_acc/i, epoch)
 
             # Save the model:
             torch.save(self.net.state_dict(), self.model_path)

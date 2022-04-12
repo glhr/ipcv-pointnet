@@ -44,6 +44,8 @@ class DataExtractor:
                 data_batch_list.append(data_batch)
                 label_batch_list.append(label_batch)
                 counter += 1
+            else:
+                break
         data_batches = np.concatenate(data_batch_list, 0)
         label_batches = np.concatenate(label_batch_list, 0)
 
@@ -64,7 +66,7 @@ class DataExtractor:
         test_label = label_batches[test_idxs]
 
         # Correct labels into our own desire
-        np.set_printoptions(threshold=sys.maxsize)
+        # np.set_printoptions(threshold=sys.maxsize)
         #train_label = DataExtractor.changeLabels(self, labels=train_label)
         #DataExtractor.FindDistributionOfPoints(self, labels=train_label)
         #print('trainlabels: ', train_label[0:32, :], train_label.shape)
@@ -124,8 +126,8 @@ class DataExtractor:
         labels = labels.cpu().numpy()
         clouds = points.reshape(4096, 3)
 
-        predictions = DataExtractor.changeLabels(self, labels=predictions)
-        labels = DataExtractor.changeLabels(self, labels=labels)
+        #predictions = DataExtractor.changeLabels(self, labels=predictions)
+        #labels = DataExtractor.changeLabels(self, labels=labels)
 
         # Calculate acc
         acc = DataExtractor.CalculateACC_ForTest(self, prediction=predictions, label=labels)
@@ -181,10 +183,12 @@ class DataExtractor:
 
 
     def CalculateACC(self, prediction, label):
-        print(prediction.shape, label.shape)
+        #print(prediction.shape, label.shape)
         correctGuess = (prediction == label).sum()
-        print(f'correct guesses out of {len(prediction[1])*len(prediction)}: {correctGuess}')
-        return (correctGuess/(len(prediction[1])*len(prediction))*100)
+        #print(f'correct guesses out of {len(prediction.flatten())}: {correctGuess}')
+        acc = 100*(correctGuess/len(prediction.flatten()))
+        #print(acc)
+        return acc
 
 
 
@@ -192,7 +196,7 @@ class DataExtractor:
         print(prediction.shape, len(label))
         correctGuess = (prediction == label).sum()
         #print(f'correct guesses out of {len(prediction)}: {correctGuess}')
-        return correctGuess/(len(prediction)*100)
+        return 100*correctGuess/(len(prediction))
 
 
 
@@ -257,3 +261,9 @@ class DataExtractor:
 
         fig.show()
     """
+if __name__ == "__main__":
+    extractor = DataExtractor()
+    train_data, train_label, test_data, test_label = extractor.GetData()
+    points = train_data[0]
+    labels = train_label[0]
+    extractor.Visualize_shapeInColors(labels, points, labels)
