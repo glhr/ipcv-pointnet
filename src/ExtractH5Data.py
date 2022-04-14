@@ -28,8 +28,8 @@ class DataExtractor:
 
 
     def GetData(self):
-        PATH = '/Users/Mikke/PycharmProjects/HDF5_data/indoor3d_sem_seg_hdf5_data'
-        path2 = '/Users/Mikke/PycharmProjects/HDF5_data'
+        PATH = '/media/gala/DataDisk/2021_gala_ta/ta-vap/pointnet/indoor3d_sem_seg_hdf5_data'
+        path2 = '/media/gala/DataDisk/2021_gala_ta/ta-vap/pointnet/'
         ALL_FILES = self.getDataFiles(os.path.join(PATH, 'all_files.txt'))
         room_filelist = [line.rstrip() for line in open(os.path.join(PATH, 'room_filelist.txt'))]
         print(len(ALL_FILES))

@@ -11,6 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from torch.utils.tensorboard import SummaryWriter
 import torchvision
+from tqdm import tqdm
 
 
 from matplotlib import pyplot
@@ -32,7 +33,7 @@ class Trainer:
         self.batch_size = 8
         self.lr = 0.001
         self.n_epochs = 15
-        self.model_path = "/Users/Mikke/PycharmProjects/pointnet/model/model.pth"
+        self.model_path = "/media/gala/DataDisk/2021_gala_ta/ta-vap/pointnet/model/model.pth"
         self.load_model = False
         self.compute_validation = False
 
@@ -87,7 +88,7 @@ class Trainer:
             running_acc = 0.0
             #  Training Loop:
             self.net.train()
-            for i, (points, target) in enumerate(self.dataloader, start=1):
+            for i, (points, target) in tqdm(enumerate(self.dataloader, start=1)):
                 #if torch.cuda.is_available():
                     points = points.to(self.device)
                     target = target.to(self.device, dtype = torch.int64)
@@ -113,7 +114,7 @@ class Trainer:
                     acc = ExtractH5Data.DataExtractor.CalculateACC(self, prediction=pred_, label=target)
                     running_acc += acc.item()
 
-            print("Epoch: %d, Error Loss: %f, acc: %f" % (epoch, running_loss/i, running_acc/i),'%')
+            print("Epoch: %d, i: %d, Error Loss: %f, acc: %f" % (epoch, i, running_loss/i, running_acc/i),'%')
 
             self.writer.add_scalar("Loss/train", running_loss/i, epoch)
             self.writer.add_scalar('Accuracy', running_acc/i, epoch)
